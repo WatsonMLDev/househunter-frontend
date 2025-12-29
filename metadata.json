@@ -1,0 +1,5 @@
+{
+  "name": "HouseHunter GIS",
+  "description": "A geospatial property intelligence tool visualizing real estate listings against high-value 'Hunter Zones'.",
+  "requestFramePermissions": []
+}
