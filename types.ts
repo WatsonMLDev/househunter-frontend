@@ -8,7 +8,7 @@ export enum HunterTier {
   GOLD = 'Gold',
   SILVER = 'Silver',
   BRONZE = 'Bronze',
-  NONE = 'None'
+  ZINC = 'Zinc'
 }
 
 export interface GeoPoint {
@@ -36,7 +36,7 @@ export interface PropertyListing {
 export interface HunterZone {
   id: string;
   tier: HunterTier;
-  coordinates: [number, number][]; 
+  coordinates: [number, number][];
   label: string;
 }
 
@@ -46,8 +46,10 @@ export interface FilterState {
   minBeds: number;
   minBaths: number;
   priceTiers: HunterTier[]; // Filter for Price
-  zoneTiers: HunterTier[];  // Filter for Location
+  zoneTiers: HunterTier[];  // Filter for Location (Property Filtering)
+  visibleZones: HunterTier[]; // Filter for Map Overlay (Isochrones)
   status: ListingStatus[];
   favoritesOnly: boolean;
   hideSeen: boolean;
+  addressQuery: string;
 }

@@ -24,48 +24,48 @@ const mapTier = (tierStr: string): HunterTier => {
     case 'gold': return HunterTier.GOLD;
     case 'silver': return HunterTier.SILVER;
     case 'bronze': return HunterTier.BRONZE;
-    default: return HunterTier.NONE;
+    default: return HunterTier.ZINC;
   }
 };
 
 const processLocalZones = (): HunterZone[] => {
-    try {
-        const featureCollection = zonesData[0] as any;
-        if (!featureCollection || !featureCollection.features) return [];
+  try {
+    const featureCollection = zonesData[0] as any;
+    if (!featureCollection || !featureCollection.features) return [];
 
-        return featureCollection.features.map((f: any, index: number) => {
-            let rawCoords = [];
-            if (f.geometry.type === 'Polygon') {
-                rawCoords = f.geometry.coordinates[0];
-            } else if (f.geometry.type === 'MultiPolygon') {
-                rawCoords = f.geometry.coordinates[0][0];
-            }
+    return featureCollection.features.map((f: any, index: number) => {
+      let rawCoords = [];
+      if (f.geometry.type === 'Polygon') {
+        rawCoords = f.geometry.coordinates[0];
+      } else if (f.geometry.type === 'MultiPolygon') {
+        rawCoords = f.geometry.coordinates[0][0];
+      }
 
-            const coordinates: [number, number][] = rawCoords.map((c: number[]) => [c[1], c[0]]);
+      const coordinates: [number, number][] = rawCoords.map((c: number[]) => [c[1], c[0]]);
 
-            const contour = f.properties.contour;
-            let tier = HunterTier.BRONZE;
-            let label = "60-75 min drive";
+      const contour = f.properties.contour;
+      let tier = HunterTier.BRONZE;
+      let label = "60-75 min drive";
 
-            if (contour <= 40) {
-                tier = HunterTier.GOLD;
-                label = "0-40 min drive";
-            } else if (contour <= 60) {
-                tier = HunterTier.SILVER;
-                label = "40-60 min drive";
-            }
+      if (contour <= 40) {
+        tier = HunterTier.GOLD;
+        label = "0-40 min drive";
+      } else if (contour <= 60) {
+        tier = HunterTier.SILVER;
+        label = "40-60 min drive";
+      }
 
-            return {
-                id: f.properties.id || `zone-${index}`,
-                tier: tier,
-                coordinates: coordinates,
-                label: label
-            };
-        });
-    } catch (e) {
-        console.warn("Failed to process local zones", e);
-        return [];
-    }
+      return {
+        id: f.properties.id || `zone-${index}`,
+        tier: tier,
+        coordinates: coordinates,
+        label: label
+      };
+    });
+  } catch (e) {
+    console.warn("Failed to process local zones", e);
+    return [];
+  }
 };
 
 export const fetchRealEstateData = async (): Promise<{ listings: PropertyListing[], zones: HunterZone[] }> => {
@@ -94,12 +94,12 @@ export const fetchRealEstateData = async (): Promise<{ listings: PropertyListing
       status: mapStatus(p.status || ''),
       image_url: p.image_url || `https://picsum.photos/seed/${p.id}/400/300`,
       property_url: p.property_url || '#',
-      location: { 
+      location: {
         lat: p.location?.lat || p.lat || 0,
         lon: p.location?.lon || p.lon || 0
       },
       price_tier: calculatePriceTier(p.price),
-      zone_tier: mapTier(p.gis_tier), 
+      zone_tier: mapTier(p.gis_tier),
       days_on_market: p.days_on_market || Math.floor(Math.random() * 30),
     }));
 
