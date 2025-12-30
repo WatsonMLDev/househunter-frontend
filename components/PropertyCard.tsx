@@ -45,12 +45,19 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
     }
   };
 
+  const handleCardClick = () => {
+    if (listing.property_url && listing.property_url !== '#') {
+      window.open(listing.property_url, '_blank');
+    }
+  };
+
   return (
     <div 
-      className={`group relative flex flex-col bg-slate-900 border border-slate-800 rounded-xl shadow-lg hover:shadow-indigo-900/10 hover:border-slate-700 transition-all duration-300 overflow-hidden ${isRejected ? 'opacity-30 grayscale' : ''}`}
+      className={`group relative flex flex-col bg-slate-900 border border-slate-800 rounded-xl shadow-lg hover:shadow-indigo-900/10 hover:border-slate-700 transition-all duration-300 overflow-hidden cursor-pointer ${isRejected ? 'opacity-30 grayscale' : ''}`}
       onMouseEnter={() => onFocus(listing.id)}
+      onClick={handleCardClick}
     >
-      {/* Image Section */}
+      {/* Image Section - HIDDEN FOR PERFORMANCE
       <div className="relative h-48 w-full overflow-hidden bg-slate-800">
         <img 
           src={listing.image_url} 
@@ -61,10 +68,8 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           }}
         />
         
-        {/* Overlays */}
         <div className="absolute top-0 left-0 w-full p-3 flex justify-between items-start bg-gradient-to-b from-slate-950/80 to-transparent">
             <div className="flex gap-2">
-                 {/* Price Tier Badge */}
                 <span className={`flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-bold tracking-wider rounded backdrop-blur-sm ${getPriceBadge(listing.price_tier)}`}>
                     <DollarSign className="w-3 h-3" />
                     {listing.price_tier}
@@ -78,7 +83,6 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             )}
         </div>
 
-        {/* Favorite Button (Overlay) */}
         <button 
            onClick={(e) => { e.stopPropagation(); onToggleFavorite(listing.id); }}
            className={`absolute bottom-3 right-3 p-2 rounded-full backdrop-blur-md shadow-lg border border-white/10 transition-all ${isFavorite ? 'bg-rose-500 text-white' : 'bg-slate-900/60 text-slate-300 hover:bg-slate-900 hover:text-rose-400'}`}
@@ -86,20 +90,29 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
            <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
         </button>
       </div>
+      */}
 
       {/* Content Section */}
       <div className="p-4 flex flex-col gap-3">
         <div>
           <div className="flex justify-between items-start">
              <h3 className="text-xl font-extrabold text-slate-100 tracking-tight">{formatPrice(listing.price)}</h3>
-             {/* Zone Indicator */}
-             <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${getZoneColor(listing.zone_tier)}`}>
-                 <Timer className="w-3.5 h-3.5" />
-                 {listing.zone_tier} Zone
+             <div className="flex gap-2 items-center">
+                {/* Re-added Price Badge here since image is hidden */}
+                <span className={`flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded ${getPriceBadge(listing.price_tier)}`}>
+                    {listing.price_tier}
+                </span>
+                {/* Favorite Button (Moved here since image is hidden) */}
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onToggleFavorite(listing.id); }}
+                  className={`p-1.5 rounded-full border border-slate-700 transition-all ${isFavorite ? 'bg-rose-500/20 text-rose-500 border-rose-500/50' : 'bg-slate-800 text-slate-500 hover:text-rose-400'}`}
+                >
+                  <Heart className={`w-3.5 h-3.5 ${isFavorite ? 'fill-current' : ''}`} />
+                </button>
              </div>
           </div>
           
-          <div className="flex items-center text-slate-400 text-sm mt-1">
+          <div className="flex items-center text-slate-400 text-sm mt-2">
              <MapPin className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
              <span className="truncate font-medium">{listing.address}</span>
           </div>
@@ -123,9 +136,10 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         </div>
 
         <div className="flex justify-between items-center mt-auto pt-2">
-           <span className="text-[11px] font-medium text-slate-500 bg-slate-800 px-2 py-1 rounded border border-slate-700">
-             {listing.days_on_market} days on market
-           </span>
+           <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${getZoneColor(listing.zone_tier)}`}>
+               <Timer className="w-3.5 h-3.5" />
+               {listing.zone_tier} Zone
+           </div>
            
            <button 
              onClick={(e) => { e.stopPropagation(); onToggleReject(listing.id); }}

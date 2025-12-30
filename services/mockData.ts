@@ -1,48 +1,70 @@
 import { HunterTier, ListingStatus, PropertyListing, HunterZone } from '../types';
+import { zonesData } from './zonesData'; // Direct Import
 
 const CENTER_LAT = 38.0293;
 const CENTER_LON = -78.4767; // Charlottesville, VA
 
-// Helper to create jagged polygon (simulating isochrone)
-const generateJaggedPoly = (centerLat: number, centerLon: number, radiusMeters: number, points: number, noise: number) => {
-  const coords: [number, number][] = [];
-  const rDeg = radiusMeters / 111300;
-  
-  for (let i = 0; i <= points; i++) {
-    const angle = (i / points) * 2 * Math.PI;
-    const rNoise = 1 + (Math.random() - 0.5) * noise;
-    const r = rDeg * rNoise;
-    
-    const lat = centerLat + r * Math.sin(angle);
-    const lon = centerLon + r * Math.cos(angle);
-    coords.push([lat, lon]);
+// Helper to map string tier from GeoJSON to Enum
+const mapTier = (tierStr: string): HunterTier => {
+  switch (tierStr?.toLowerCase()) {
+    case 'gold': return HunterTier.GOLD;
+    case 'silver': return HunterTier.SILVER;
+    case 'bronze': return HunterTier.BRONZE;
+    default: return HunterTier.NONE;
   }
-  return coords;
 };
 
-// Create Zones (Ordered Bronze -> Silver -> Gold so they stack correctly on map)
-export const MOCK_ZONES: HunterZone[] = [
-  {
-    id: 'z-bronze',
-    tier: HunterTier.BRONZE,
-    label: '60-75 min drive',
-    coordinates: generateJaggedPoly(CENTER_LAT, CENTER_LON, 18000, 40, 0.4)
-  },
-  {
-    id: 'z-silver',
-    tier: HunterTier.SILVER,
-    label: '40-60 min drive',
-    coordinates: generateJaggedPoly(CENTER_LAT, CENTER_LON, 12000, 35, 0.35)
-  },
-  {
-    id: 'z-gold',
-    tier: HunterTier.GOLD,
-    label: '0-40 min drive',
-    coordinates: generateJaggedPoly(CENTER_LAT, CENTER_LON, 6000, 30, 0.3)
-  }
-];
+// Process the Zones from the JSON file immediately
+// This ensures that even in mock mode, we see the REAL geospatial contours
+const processZones = (): HunterZone[] => {
+    try {
+        const featureCollection = zonesData[0] as any; // Assuming array wrap based on user input
+        if (!featureCollection || !featureCollection.features) return [];
 
-// Helper to determine zone based on distance (simplified check)
+        return featureCollection.features.map((f: any, index: number) => {
+            let rawCoords = [];
+            if (f.geometry.type === 'Polygon') {
+                rawCoords = f.geometry.coordinates[0];
+            } else if (f.geometry.type === 'MultiPolygon') {
+                rawCoords = f.geometry.coordinates[0][0];
+            }
+
+            // Swap Lon/Lat to Lat/Lon for Leaflet
+            const coordinates: [number, number][] = rawCoords.map((c: number[]) => [c[1], c[0]]);
+
+            // Extract tier from properties (GeoJSON usually has 'tier' or 'contour' property)
+            // Based on user input, it seems to have 'contour' or 'tier'. 
+            // If explicit 'tier' isn't there, we can guess based on color or ID, but let's assume 'tier' exists or default.
+            // Looking at the provided JSON, it has "properties": { "contour": 60, "fill": "#bfaa40" ... }
+            // Let's map contour/time to Tier
+            const contour = f.properties.contour;
+            let tier = HunterTier.BRONZE;
+            let label = "60-75 min drive";
+
+            if (contour <= 40) {
+                tier = HunterTier.GOLD;
+                label = "0-40 min drive";
+            } else if (contour <= 60) {
+                tier = HunterTier.SILVER;
+                label = "40-60 min drive";
+            } 
+
+            return {
+                id: f.properties.id || `zone-${index}`,
+                tier: tier,
+                coordinates: coordinates,
+                label: label
+            };
+        });
+    } catch (e) {
+        console.error("Failed to parse zones data", e);
+        return [];
+    }
+}
+
+export const MOCK_ZONES: HunterZone[] = processZones();
+
+// Helper to determine zone based on distance (simplified check for mock listings)
 const getZoneFromLocation = (lat: number, lon: number): HunterTier => {
   const dist = Math.sqrt(Math.pow(lat - CENTER_LAT, 2) + Math.pow(lon - CENTER_LON, 2)) * 111300;
   if (dist < 7000) return HunterTier.GOLD;
@@ -54,7 +76,6 @@ const getZoneFromLocation = (lat: number, lon: number): HunterTier => {
 const generateListings = (count: number): PropertyListing[] => {
   return Array.from({ length: count }).map((_, i) => {
     // 1. Generate Location
-    // Spread them out to cover different zones
     const distFactor = Math.random(); 
     const radius = 2000 + (distFactor * 16000); // 2km to 18km
     const angle = Math.random() * 2 * Math.PI;
@@ -63,11 +84,8 @@ const generateListings = (count: number): PropertyListing[] => {
     const lat = CENTER_LAT + rDeg * Math.sin(angle);
     const lon = CENTER_LON + rDeg * Math.cos(angle);
 
-    // 2. Determine Zone Tier
     const zoneTier = getZoneFromLocation(lat, lon);
 
-    // 3. Generate Price & Price Tier
-    // Price cap 275k. Gold < 225, Silver 225-250, Bronze > 250
     const price = Math.floor(Math.random() * (275000 - 150000) + 150000);
     
     let priceTier = HunterTier.BRONZE;
@@ -89,10 +107,10 @@ const generateListings = (count: number): PropertyListing[] => {
       listing_type: 'Single Family',
       status: Math.random() > 0.2 ? ListingStatus.FOR_SALE : ListingStatus.PENDING,
       image_url: `https://picsum.photos/seed/${i + 100}/400/300`,
+      property_url: 'https://www.zillow.com',
       location: { lat, lon },
       price_tier: priceTier,
       zone_tier: zoneTier,
-      gis_contour: 10,
       days_on_market: Math.floor(Math.random() * 45)
     };
   });

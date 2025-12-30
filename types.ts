@@ -26,6 +26,7 @@ export interface PropertyListing {
   listing_type: string;
   status: ListingStatus;
   image_url: string;
+  property_url: string; // Link to Zillow/Realtor
   location: GeoPoint;
   price_tier: HunterTier; // Based on price (<225k, etc)
   zone_tier: HunterTier;  // Based on location (Isochrone)
