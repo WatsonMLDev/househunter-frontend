@@ -11,6 +11,13 @@ export enum HunterTier {
   ZINC = 'Zinc'
 }
 
+export interface PropertyChangeLog {
+  id: string;
+  property_id: string;
+  timestamp: string;
+  changes: Record<string, { old: any; new: any }>;
+}
+
 export interface GeoPoint {
   lat: number;
   lon: number;
@@ -31,6 +38,8 @@ export interface PropertyListing {
   price_tier: HunterTier; // Based on price (<225k, etc)
   zone_tier: HunterTier;  // Based on location (Isochrone)
   days_on_market: number;
+  created_at?: string; // ISO timestamp of discovery
+  latest_change?: string; // ISO timestamp of last update
 }
 
 export interface HunterZone {

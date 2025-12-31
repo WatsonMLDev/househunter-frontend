@@ -231,7 +231,7 @@ const App: React.FC = () => {
 
       // 2. Tier Filters
       if (!filters.priceTiers.includes(item.price_tier)) return false;
-      if (!filters.zoneTiers.includes(item.zone_tier)) return false;
+      if (!filters.zoneTiers.includes(item.zone_tier || HunterTier.ZINC)) return false;
 
       // 3. Status & Tracking
       if (!filters.status.includes(item.status)) return false;

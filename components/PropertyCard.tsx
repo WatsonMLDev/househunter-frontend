@@ -1,6 +1,6 @@
-import React from 'react';
-import { PropertyListing, HunterTier, ListingStatus } from '../types';
-import { Heart, EyeOff, BedDouble, Bath, Square, MapPin, DollarSign, Timer, Eye } from 'lucide-react';
+import { PropertyListing, HunterTier, ListingStatus, PropertyChangeLog } from '../types';
+import { Heart, EyeOff, BedDouble, Bath, Square, MapPin, DollarSign, Timer, Eye, History, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 
 interface PropertyCardProps {
   listing: PropertyListing;
@@ -29,6 +29,27 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   onMarkViewed,
   isFocused = false,
 }) => {
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<PropertyChangeLog[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const toggleHistory = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!showHistory && history.length === 0) {
+      setLoadingHistory(true);
+      try {
+        const res = await fetch(`http://localhost:8000/properties/${listing.id}/history`);
+        const data = await res.json();
+        setHistory(data);
+      } catch (err) {
+        console.error("Failed to fetch history", err);
+      } finally {
+        setLoadingHistory(false);
+      }
+    }
+    setShowHistory(!showHistory);
+  };
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -61,6 +82,16 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
       window.open(listing.property_url, '_blank');
     }
   };
+
+  const isNew = () => {
+    if (!listing.created_at) return false;
+    const created = new Date(listing.created_at);
+    const now = new Date();
+    const diffExhausted = now.getTime() - created.getTime();
+    const hours48 = 48 * 60 * 60 * 1000;
+    return diffExhausted < hours48;
+  };
+
 
   return (
     <div
@@ -114,9 +145,16 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             <h3 className="text-xl font-extrabold text-slate-100 tracking-tight">{formatPrice(listing.price)}</h3>
             <div className="flex gap-2 items-center">
               {/* Re-added Price Badge here since image is hidden */}
-              <span className={`flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded ${getPriceBadge(listing.price_tier)}`}>
-                {listing.price_tier}
-              </span>
+              <div className="flex gap-1.5">
+                {isNew() && (
+                  <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 animate-pulse">
+                    <Sparkles className="w-3 h-3" /> New
+                  </span>
+                )}
+                <span className={`flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded ${getPriceBadge(listing.price_tier)}`}>
+                  {listing.price_tier}
+                </span>
+              </div>
               {/* Favorite Button (Moved here since image is hidden) */}
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleFavorite(listing.id); }}
@@ -130,7 +168,51 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           <div className="flex items-center text-slate-400 text-sm mt-2">
             <MapPin className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
             <span className="truncate font-medium">{listing.address}</span>
+            <span className="truncate font-medium">{listing.address}</span>
           </div>
+
+          {/* History Badge */}
+          {listing.latest_change && (
+            <div className="mt-2 flex">
+              <button
+                onClick={toggleHistory}
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 transition-colors"
+              >
+                <History className="w-3 h-3" />
+                UPDATED {new Date(listing.latest_change).toLocaleDateString()}
+                {showHistory ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+            </div>
+          )}
+
+          {/* History Dropdown */}
+          {showHistory && (
+            <div className="mt-2 p-2 bg-slate-950/50 rounded-lg border border-slate-700/50 text-xs text-slate-300 animate-in slide-in-from-top-2 duration-200">
+              {loadingHistory ? (
+                <div className="text-center py-2 text-slate-500">Loading history...</div>
+              ) : history.length > 0 ? (
+                <div className="space-y-2">
+                  {history.map((h, i) => (
+                    <div key={h.id || i} className="flex flex-col gap-1 pb-2 border-b border-slate-800 last:border-0 last:pb-0">
+                      <div className="text-[10px] text-slate-500 font-mono">{new Date(h.timestamp).toLocaleString()}</div>
+                      <div className="flex flex-col gap-1">
+                        {Object.entries(h.changes).map(([field, delta]: [string, any], j) => (
+                          <div key={j} className="flex gap-1">
+                            <span className="font-semibold text-indigo-400 capitalize">{field}:</span>
+                            <span className="text-slate-400 decoration-slate-600 line-through text-[10px] pt-0.5">{JSON.stringify(delta.old)}</span>
+                            <span className="text-slate-500">→</span>
+                            <span className="text-emerald-400 font-medium">{JSON.stringify(delta.new)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-slate-500 italic">No detailed history available.</div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4 py-3 border-t border-slate-800">
@@ -153,7 +235,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         <div className="flex justify-between items-center mt-auto pt-2">
           <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${getZoneColor(listing.zone_tier)}`}>
             <Timer className="w-3.5 h-3.5" />
-            {listing.zone_tier} Zone
+            {listing.zone_tier || HunterTier.ZINC} Zone
           </div>
 
           <div className="flex items-center gap-2">

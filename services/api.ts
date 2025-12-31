@@ -101,6 +101,8 @@ export const fetchRealEstateData = async (): Promise<{ listings: PropertyListing
       price_tier: calculatePriceTier(p.price),
       zone_tier: mapTier(p.gis_tier),
       days_on_market: p.days_on_market || Math.floor(Math.random() * 30),
+      created_at: p.created_at,
+      latest_change: p.latest_change
     }));
 
     return { listings, zones };
