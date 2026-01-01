@@ -1,20 +1,60 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# HouseHunter Frontend
 
-# Run and deploy your AI Studio app
+The frontend for HouseHunter, built with React and Vite. It provides a modern, responsive interface for browsing real estate listings, visualizing them on a map with isochrone overlays, and managing your house hunt.
 
-This contains everything you need to run your app locally.
+## 🚀 Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1pleWeNbIKUIwusWR7IFqXGQvocPa-r21
+- **Interactive Map:** Leaflet-based map visualization showing property locations and commute zone isochrones.
+- **Property Cards:** Detailed cards showing price, address, stats, and images.
+- **Filtering:** Robust sidebar for filtering by price, beds/baths, status, and custom "Hunter Tiers" (Gold/Silver/Bronze).
+- **Workflow Management:** Mark properties as Favorites, Rejected, or Undecided.
+- **History View:** Inspect price and status changes for any property.
 
-## Run Locally
+## 🛠️ Tech Stack
 
-**Prerequisites:**  Node.js
+- **Framework:** React 18 + Vite
+- **Language:** TypeScript
+- **Styling:** TailwindCSS
+- **Map:** React Leaftlet
+- **Icons:** Lucide React
 
+## 🔧 Installation
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Prerequisites
+- Node.js 18+
+- npm
+
+### Setup
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/WatsonMLDev/househunter-frontend.git
+    cd househunter-frontend
+    ```
+
+2.  **Install Dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Environment Variables:**
+    Create a `.env` file (or use defaults):
+    ```env
+    VITE_API_BASE_URL=http://localhost:8000
+    ```
+
+## 🏃 Usage
+
+Start the development server:
+```bash
+npm run dev
+```
+The application will be available at `http://localhost:5173`.
+
+## 📂 Project Structure
+
+- `src/`
+  - `components/`: Reusable UI components (`PropertyCard`, `FilterSidebar`)
+  - `services/`: API integration and data services
+  - `types.ts`: TypeScript definitions for the data model
+  - `App.tsx`: Main application controller
