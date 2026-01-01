@@ -32,7 +32,8 @@ export interface PropertyListing {
   sqft: number;
   listing_type: string;
   status: ListingStatus;
-  image_url: string;
+  primary_image_url?: string;
+  image_url?: string; // Legacy
   property_url: string; // Link to Zillow/Realtor
   location: GeoPoint;
   price_tier: HunterTier; // Based on price (<225k, etc)

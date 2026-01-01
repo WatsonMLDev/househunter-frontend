@@ -103,66 +103,52 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
       onMouseEnter={() => onFocus(listing.id)}
       onClick={handleCardClick}
     >
-      {/* Image Section - HIDDEN FOR PERFORMANCE
+      {/* Image Section */}
       <div className="relative h-48 w-full overflow-hidden bg-slate-800">
-        <img 
-          src={listing.image_url} 
-          alt={listing.address} 
+        <img
+          src={listing.primary_image_url || listing.image_url}
+          alt={listing.address}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
+            (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=No+Image';
           }}
         />
-        
+
         <div className="absolute top-0 left-0 w-full p-3 flex justify-between items-start bg-gradient-to-b from-slate-950/80 to-transparent">
-            <div className="flex gap-2">
-                <span className={`flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-bold tracking-wider rounded backdrop-blur-sm ${getPriceBadge(listing.price_tier)}`}>
-                    <DollarSign className="w-3 h-3" />
-                    {listing.price_tier}
-                </span>
-            </div>
-            
-            {listing.status === ListingStatus.PENDING && (
-                <span className="px-2 py-1 text-[10px] bg-rose-500/90 text-white font-bold rounded backdrop-blur-sm shadow-sm border border-rose-400/50">
-                    PENDING
-                </span>
+          <div className="flex gap-2">
+            <span className={`flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-bold tracking-wider rounded backdrop-blur-sm ${getPriceBadge(listing.price_tier)}`}>
+              <DollarSign className="w-3 h-3" />
+              {listing.price_tier}
+            </span>
+            {isNew() && (
+              <span className="flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-bold tracking-wider rounded bg-cyan-500/90 text-white border border-cyan-400/50 animate-pulse backdrop-blur-sm shadow-lg shadow-cyan-900/20">
+                <Sparkles className="w-3 h-3" /> New
+              </span>
             )}
+          </div>
+
+          {listing.status === ListingStatus.PENDING && (
+            <span className="px-2 py-1 text-[10px] bg-rose-500/90 text-white font-bold rounded backdrop-blur-sm shadow-sm border border-rose-400/50">
+              PENDING
+            </span>
+          )}
         </div>
 
-        <button 
-           onClick={(e) => { e.stopPropagation(); onToggleFavorite(listing.id); }}
-           className={`absolute bottom-3 right-3 p-2 rounded-full backdrop-blur-md shadow-lg border border-white/10 transition-all ${isFavorite ? 'bg-rose-500 text-white' : 'bg-slate-900/60 text-slate-300 hover:bg-slate-900 hover:text-rose-400'}`}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleFavorite(listing.id); }}
+          className={`absolute bottom-3 right-3 p-2 rounded-full backdrop-blur-md shadow-lg border border-white/10 transition-all ${isFavorite ? 'bg-rose-500 text-white' : 'bg-slate-900/60 text-slate-300 hover:bg-slate-900 hover:text-rose-400'}`}
         >
-           <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+          <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
         </button>
       </div>
-      */}
+
 
       {/* Content Section */}
       <div className="p-4 flex flex-col gap-3">
         <div>
           <div className="flex justify-between items-start">
             <h3 className="text-xl font-extrabold text-slate-100 tracking-tight">{formatPrice(listing.price)}</h3>
-            <div className="flex gap-2 items-center">
-              {/* Re-added Price Badge here since image is hidden */}
-              <div className="flex gap-1.5">
-                {isNew() && (
-                  <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 animate-pulse">
-                    <Sparkles className="w-3 h-3" /> New
-                  </span>
-                )}
-                <span className={`flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded ${getPriceBadge(listing.price_tier)}`}>
-                  {listing.price_tier}
-                </span>
-              </div>
-              {/* Favorite Button (Moved here since image is hidden) */}
-              <button
-                onClick={(e) => { e.stopPropagation(); onToggleFavorite(listing.id); }}
-                className={`p-1.5 rounded-full border border-slate-700 transition-all ${isFavorite ? 'bg-rose-500/20 text-rose-500 border-rose-500/50' : 'bg-slate-800 text-slate-500 hover:text-rose-400'}`}
-              >
-                <Heart className={`w-3.5 h-3.5 ${isFavorite ? 'fill-current' : ''}`} />
-              </button>
-            </div>
+            {/* Controls moved back to image section */}
           </div>
 
           <div className="flex items-center text-slate-400 text-sm mt-2">

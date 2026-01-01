@@ -92,7 +92,8 @@ export const fetchRealEstateData = async (): Promise<{ listings: PropertyListing
       sqft: p.sqft || 0,
       listing_type: p.listing_type || 'Single Family',
       status: mapStatus(p.status || ''),
-      image_url: p.image_url || `https://picsum.photos/seed/${p.id}/400/300`,
+      primary_image_url: p.primary_image_url || undefined,
+      image_url: p.image_url, // Legacy or null
       property_url: p.property_url || '#',
       location: {
         lat: p.location?.lat || p.lat || 0,
