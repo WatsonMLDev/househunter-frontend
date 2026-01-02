@@ -5,7 +5,8 @@ import { MapContainerView } from './components/MapContainer';
 import { fetchRealEstateData } from './services/api';
 import { MOCK_LISTINGS, MOCK_ZONES } from './services/mockData';
 import { FilterState, HunterTier, ListingStatus, PropertyListing, HunterZone } from './types';
-import { Map as MapIcon, List, Home, AlertCircle, Sparkles, WifiOff, RefreshCcw, ArrowUpDown, Eye, Heart, EyeOff } from 'lucide-react';
+import { Map as MapIcon, List, Home, AlertCircle, Sparkles, WifiOff, RefreshCcw, ArrowUpDown, Eye, Heart, EyeOff, Settings } from 'lucide-react';
+import { ZoneConfig } from './components/ZoneConfig';
 
 type ViewMode = 'all' | 'favorites' | 'rejected' | 'history' | 'undecided';
 type SortOption = 'price-asc' | 'price-desc' | 'newest';
@@ -17,6 +18,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [apiError, setApiError] = useState(false);
+  const [isZoneConfigOpen, setIsZoneConfigOpen] = useState(false);
 
   // Tracking state (Favorites / Rejected)
   const [favorites, setFavorites] = useState<Set<string>>(() => {
@@ -320,6 +322,8 @@ const App: React.FC = () => {
         </div>
       )}
 
+      <ZoneConfig isOpen={isZoneConfigOpen} onClose={() => setIsZoneConfigOpen(false)} />
+
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800 z-20 shadow-md">
         <div className="flex items-center gap-3">
@@ -332,20 +336,30 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile View Toggle */}
-        <div className="md:hidden flex gap-2">
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowMapMobile(false)}
-            className={`p-2 rounded ${!showMapMobile ? 'bg-indigo-900 text-indigo-300' : 'text-slate-500'}`}
+            onClick={() => setIsZoneConfigOpen(true)}
+            className="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
+            title="Configure Isochrones"
           >
-            <List className="w-5 h-5" />
+            <Settings className="w-5 h-5" />
           </button>
-          <button
-            onClick={() => setShowMapMobile(true)}
-            className={`p-2 rounded ${showMapMobile ? 'bg-indigo-900 text-indigo-300' : 'text-slate-500'}`}
-          >
-            <MapIcon className="w-5 h-5" />
-          </button>
+
+          {/* Mobile View Toggle */}
+          <div className="md:hidden flex gap-2">
+            <button
+              onClick={() => setShowMapMobile(false)}
+              className={`p-2 rounded ${!showMapMobile ? 'bg-indigo-900 text-indigo-300' : 'text-slate-500'}`}
+            >
+              <List className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setShowMapMobile(true)}
+              className={`p-2 rounded ${showMapMobile ? 'bg-indigo-900 text-indigo-300' : 'text-slate-500'}`}
+            >
+              <MapIcon className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
 
